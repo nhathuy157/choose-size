@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   output: "export",
-  // Only use a basePath in production; during dev run at root
-  basePath: process.env.NODE_ENV === 'production' ? '/choose-size' : undefined,
-  // Prefix static assets in production export
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/choose-size' : undefined,
+  // Serve app under /choose-size on GitHub Pages
+  basePath: process.env.NODE_ENV === 'production' ? '/choose-size' : '',
+  // Prefix static assets to match basePath
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/choose-size' : '',
   trailingSlash: true,
 };
 
