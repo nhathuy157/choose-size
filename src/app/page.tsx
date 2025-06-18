@@ -1,6 +1,10 @@
-import { redirect } from "next/navigation";
+import WizardLayout from './wizard/layout';
+import ProductPage from './wizard/page';
 
 export default function Home() {
-  // Chuyển hướng về bước đầu wizard
-  redirect("/wizard");
+  return (
+    <WizardLayout>
+      <ProductPage />
+    </WizardLayout>
+  );
 }
