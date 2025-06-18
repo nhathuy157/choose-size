@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
-const nextConfig = {
-  output: 'export',
-  basePath: '/choose-size',
-  trailingSlash: true, // Quan trọng để Next export hoạt động chính xác
+const nextConfig: NextConfig = {
+  /* config options here */
+  output: "export",
+  basePath: "/choose-size",
+  trailingSlash: true,
 };
 
 export default nextConfig;
