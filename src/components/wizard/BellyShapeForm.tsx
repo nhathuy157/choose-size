@@ -4,7 +4,7 @@ import React from 'react';
 import { useWizard } from '@/context/WizardContext';
 import { useRouter } from 'next/navigation';
 
-const options = [
+const options: { value: 'flatter' | 'average' | 'curvier'; label: string }[] = [
   { value: 'flatter', label: 'Phẳng' },
   { value: 'average', label: 'Bình thường / không biết' },
   { value: 'curvier', label: 'Cong' },
@@ -26,7 +26,7 @@ export const BellyShapeForm: React.FC = () => {
         {options.map((opt) => (
           <button
             key={opt.value}
-            onClick={() => setBellyShape(opt.value as any)}
+            onClick={() => setBellyShape(opt.value)}
             className={`w-full p-4 rounded-[5px] text-base font-medium transition-colors ${
               bellyShape === opt.value
                 ? 'bg-blue-100 text-blue-700'

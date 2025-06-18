@@ -2,9 +2,10 @@
 
 import React, { createContext, useState, ReactNode, useContext } from 'react';
 
-type UnitHeight = 'cm' | 'in';
-type UnitWeight = 'kg' | 'lbs';
-type Gender = 'male' | 'female' | '';
+export type UnitHeight = 'cm' | 'in';
+export type UnitWeight = 'kg' | 'lbs';
+export type Gender = 'male' | 'female' | '';
+
 export interface WizardState {
   product: string; // sản phẩm chọn size
   height: string;

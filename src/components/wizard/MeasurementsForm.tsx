@@ -1,13 +1,14 @@
 "use client";
 
 import React from 'react';
-import { useWizard } from '@/context/WizardContext';
+import { useWizard, type Gender } from '@/context/WizardContext';
 import UnitToggle from '@/components/UnitToggle';
 import { useRouter } from 'next/navigation';
 
 export const MeasurementsForm: React.FC = () => {
   const router = useRouter();
   const { height, heightUnit, weight, weightUnit, setHeight, setHeightUnit, setWeight, setWeightUnit, gender, setGender } = useWizard();
+  const genders: Gender[] = ['male', 'female'];
 
   const handleContinue = () => {
     router.push('/wizard/belly-shape');
@@ -62,10 +63,10 @@ export const MeasurementsForm: React.FC = () => {
         <div className="space-y-2 md:col-span-2">
           <label className="block text-xl font-medium">Giới tính</label>
           <div className="grid grid-cols-2 gap-4">
-            {['male', 'female'].map((g) => (
+            {genders.map((g) => (
               <button
                 key={g}
-                onClick={() => setGender(g as any)}
+                onClick={() => setGender(g)}
                 className={`h-14 flex items-center justify-center rounded-lg border ${gender === g ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>
                 {g === 'male' ? 'Nam' : 'Nữ'}</button>
             ))}

@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // Tạo prompt
-    const prompt = `Bạn là chuyên gia thời trang. Dựa vào bảng kích thước chuẩn của sản phẩm ${product}, hình dáng bụng "${bellyShape}" và độ ôm mong muốn (${preference}/7), hãy đề xuất 2 size phù hợp kèm tỉ lệ phần trăm (ví dụ "S: 78%, M: 22%"), kèm giải thích chi tiết lý do lựa chọn.`;
+    const prompt = `Bạn là chuyên gia thời trang. Dựa vào bảng kích thước chuẩn của sản phẩm ${product}, với chiều cao ${height}${heightUnit} và cân nặng ${weight}${weightUnit}, hình dáng bụng "${bellyShape}" và độ ôm mong muốn (${preference}/7), hãy đề xuất 2 size phù hợp kèm tỉ lệ phần trăm (ví dụ "S: 78%, M: 22%"), kèm giải thích chi tiết lý do lựa chọn.`;
 
     // Gọi OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
