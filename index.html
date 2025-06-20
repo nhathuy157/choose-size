@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tư vấn chọn Size</title>    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="main-container">
+<body>    <div class="main-container">
         <h1>Tư vấn chọn Size quần áo</h1>
-        
-        <div class="content-wrapper">
-            <!-- Form bên trái -->
-            <div class="input-section">
-                <form id="sizeForm">
-                    <div class="form-group">
-                        <label for="productType">Loại sản phẩm:</label>                        <select id="productType" required>
-                            <option value="">Chọn loại sản phẩm</option>
-                            <option value="tshirt">Áo thun cổ tròn</option>
-                            <option value="shirt">Áo sơ mi</option>
-                            <option value="dress_pants">Quần tây</option>
-                        </select>
+          <div class="content-wrapper" id="mainWrapper">
+            <!-- Product Selection Grid -->
+            <div class="product-grid section-column" id="productGrid">
+                <!-- Products will be added here dynamically -->
+            </div>
+
+            <!-- Form bên giữa -->
+            <div class="input-section section-column" id="measurementForm">
+                <form id="sizeForm"><div class="form-group">
+                        <div class="selected-product">
+                            <span class="product-icon" id="selectedProductIcon"></span>
+                            <span id="selectedProductName"></span>
+                        </div>
+                        <input type="hidden" id="productType" required>
                     </div>
 
                     <div class="form-group">
@@ -30,20 +31,10 @@
                             <input type="radio" id="female" name="gender" value="female">
                             <label for="female">Nữ</label>
                         </div>
+                    </div>                    <div id="measurementInputs" class="measurement-inputs">
+                        <!-- Các trường đo sẽ được thêm động dựa trên sản phẩm -->
                     </div>
-
-                    <div class="form-group">
-                        <label for="height">Chiều cao (cm):</label>
-                        <input type="number" id="height" min="140" max="200" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="weight">Cân nặng (kg):</label>
-                        <input type="number" id="weight" min="30" max="150" required>
-                    </div>
-
                     <button type="button" id="customizeBtn" class="customize-btn">Tùy chỉnh thêm</button>
-                    <button type="submit" class="submit-btn">Tìm size phù hợp</button>
                 </form>
 
                 <!-- Modal tùy chỉnh -->
@@ -69,17 +60,21 @@
                         <button type="button" id="closeCustomize">Xác nhận</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Kết quả bên phải -->
-            <div class="result-section">
-                <div id="result" class="result hidden">
+            </div>            <!-- Kết quả bên phải -->
+            <div class="result-section">                <div id="result" class="result">
                     <h2>Kết quả tư vấn</h2>
                     <div class="size-card">
                         <p class="size-result">Size phù hợp với bạn: <span id="recommendedSize"></span></p>
                         <div class="size-details" id="sizeDetails"></div>
                     </div>
                 </div>
+                <div class="size-reference">
+                    <h2>Bảng size tham khảo</h2>
+                    <div class="size-chart">
+                        <table id="sizeChartTable"></table>
+                    </div>
+                </div>
+                <div id="sizeChartContainer" class="size-chart-container"></div>
             </div>
         </div>
     </div>

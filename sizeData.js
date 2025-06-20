@@ -1,4 +1,123 @@
-const sizeData = {
+const sizeData = {    products: {
+        tshirt: {
+            name: "Áo thun cổ tròn",
+            icon: "👕",
+            requiredMeasurements: ["height", "weight"],
+            optionalMeasurements: ["chest"],
+            sizeType: "letter", // S, M, L, etc.
+            sizeChart: {
+                male: [
+                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "92-96", length: "68-70" }},
+                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "96-100", length: "70-72" }},
+                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "100-104", length: "72-74" }},
+                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "104-108", length: "74-76" }},
+                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "108-112", length: "76-78" }}
+                ],
+                female: [
+                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "84-88", length: "64-66" }},
+                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "88-92", length: "66-68" }},
+                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "92-96", length: "68-70" }},
+                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "96-100", length: "70-72" }}
+                ]
+            }
+        },        dress_pants: {
+            name: "Quần tây",
+            icon: "👖",
+            requiredMeasurements: ["height", "weight"],
+            optionalMeasurements: ["waist", "hip"],
+            sizeType: "numeric", // 28, 29, 30, etc.
+            sizeChart: {
+                male: [
+                    { size: "28", measurements: { waist: 71, hip: 88, thigh: 54, length: 98, leg: 15 }},
+                    { size: "29", measurements: { waist: 74, hip: 90, thigh: 55, length: 99, leg: 15.5 }},
+                    { size: "30", measurements: { waist: 76, hip: 92, thigh: 56, length: 100, leg: 16 }},
+                    { size: "31", measurements: { waist: 79, hip: 94, thigh: 57, length: 101, leg: 16.5 }},
+                    { size: "32", measurements: { waist: 81, hip: 96, thigh: 58, length: 102, leg: 17 }},
+                    { size: "33", measurements: { waist: 84, hip: 98, thigh: 59, length: 103, leg: 17.5 }},
+                    { size: "34", measurements: { waist: 86, hip: 100, thigh: 60, length: 104, leg: 18 }}
+                ],
+                female: [
+                    { size: "26", measurements: { waist: 66, hip: 86, thigh: 52, length: 94, leg: 14 }},
+                    { size: "27", measurements: { waist: 69, hip: 88, thigh: 53, length: 95, leg: 14.5 }},
+                    { size: "28", measurements: { waist: 71, hip: 90, thigh: 54, length: 96, leg: 15 }},
+                    { size: "29", measurements: { waist: 74, hip: 92, thigh: 55, length: 97, leg: 15.5 }},
+                    { size: "30", measurements: { waist: 76, hip: 94, thigh: 56, length: 98, leg: 16 }}
+                ]
+            }
+        },        polo: {
+            name: "Áo Polo",
+            icon: "👕",
+            requiredMeasurements: ["height", "weight"],
+            optionalMeasurements: ["chest"],
+            sizeType: "letter",
+            sizeChart: {
+                male: [
+                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "94-98", length: "69-71" }},
+                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "98-102", length: "71-73" }},
+                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "102-106", length: "73-75" }},
+                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "106-110", length: "75-77" }},
+                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "110-114", length: "77-79" }}
+                ],
+                female: [
+                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "86-90", length: "65-67" }},
+                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "90-94", length: "67-69" }},
+                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "94-98", length: "69-71" }},
+                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "98-102", length: "71-73" }}
+                ]
+            }
+        },        shirt: {
+            name: "Áo sơ mi",
+            icon: "👔",
+            requiredMeasurements: ["height", "weight"],
+            optionalMeasurements: ["chest", "shoulder", "sleeve"],
+            sizeType: "letter",
+            sizeChart: {
+                male: [
+                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "92-96", shoulder: "42-43", sleeve: "59-60" }},
+                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "96-100", shoulder: "43-44", sleeve: "60-61" }},
+                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "100-104", shoulder: "44-45", sleeve: "61-62" }},
+                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "104-108", shoulder: "45-46", sleeve: "62-63" }},
+                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "108-112", shoulder: "46-47", sleeve: "63-64" }}
+                ],
+                female: [
+                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "84-88", shoulder: "35-36", sleeve: "55-56" }},
+                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "88-92", shoulder: "36-37", sleeve: "56-57" }},
+                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "92-96", shoulder: "37-38", sleeve: "57-58" }},
+                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "96-100", shoulder: "38-39", sleeve: "58-59" }}
+                ]
+            }
+        },        spa: {
+            name: "Áo Spa",
+            icon: "🧥",
+            requiredMeasurements: ["height", "weight"],
+            optionalMeasurements: ["chest", "shoulder"],
+            sizeType: "letter",
+            sizeChart: {
+                male: [
+                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "98-102", shoulder: "43-44" }},
+                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "102-106", shoulder: "44-45" }},
+                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "106-110", shoulder: "45-46" }},
+                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "110-114", shoulder: "46-47" }}
+                ],
+                female: [
+                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "88-92", shoulder: "35-36" }},
+                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "92-96", shoulder: "36-37" }},
+                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "96-100", shoulder: "37-38" }},
+                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "100-104", shoulder: "38-39" }}
+                ]
+            }
+        }
+    },
+    measurementLabels: {
+        height: "Chiều cao (cm)",
+        weight: "Cân nặng (kg)",
+        waist: "Vòng eo (cm)",
+        hip: "Vòng mông (cm)",
+        chest: "Vòng ngực (cm)",
+        thigh: "Vòng đùi (cm)",
+        length: "Chiều dài (cm)",
+        leg: "Ống quần (cm)"
+    },
     male: {
         tshirt: [
             { size: 'S', height: { min: 155, max: 165 }, weight: { min: 45, max: 55 } },
@@ -161,21 +280,21 @@ const sizeData = {
                 }
             }
         ],        dress_pants: [
-            {
-                size: 'XS',
+            { 
+                size: '29', 
                 sizeNumber: 29,
                 measurements: {
-                    length: 98,
-                    waist: 76,
-                    hip: 91,
-                    thigh: 54,
-                    bottom: 61,
-                    leg: 17,
+                    length: 98,        // Dài quần
+                    waist: 76,         // Vòng eo
+                    hip: 91,           // Vòng mông (lưng xuống 18cm)
+                    thigh: 54,         // Vòng đùi (cách đáy 5cm)
+                    bottom: 61,        // Vòng đáy
+                    leg: 17,           // Ống
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: 'S',
+            { 
+                size: '30',
                 sizeNumber: 30,
                 measurements: {
                     length: 98,
@@ -187,8 +306,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: 'M',
+            { 
+                size: '31',
                 sizeNumber: 31,
                 measurements: {
                     length: 99,
@@ -200,8 +319,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: 'L',
+            { 
+                size: '32',
                 sizeNumber: 32,
                 measurements: {
                     length: 99,
@@ -213,8 +332,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: 'XL',
+            { 
+                size: '33',
                 sizeNumber: 33,
                 measurements: {
                     length: 100,
@@ -226,8 +345,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: '2XL',
+            { 
+                size: '34',
                 sizeNumber: 34,
                 measurements: {
                     length: 100,
@@ -239,8 +358,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: '3XL',
+            { 
+                size: '35',
                 sizeNumber: 35,
                 measurements: {
                     length: 101,
@@ -252,8 +371,8 @@ const sizeData = {
                     note: "Quần lưng dưới rốn"
                 }
             },
-            {
-                size: '4XL',
+            { 
+                size: '36',
                 sizeNumber: 36,
                 measurements: {
                     length: 101,
@@ -263,8 +382,7 @@ const sizeData = {
                     bottom: 71,
                     leg: 21,
                     note: "Quần lưng dưới rốn"
-                }
-            }
+                }            }
         ],
         jacket: [
             { size: 'S', height: { min: 155, max: 165 }, weight: { min: 45, max: 55 } },
@@ -657,91 +775,107 @@ const sizeData = {
             }
         ],        dress_pants: [
             {
-                size: 'XS',
+                size: '26',
+                sizeNumber: 26,
                 measurements: {
-                    length: 95,
-                    waist: 64,
-                    hip: 87,
-                    thigh: 53,
-                    leg: 14,
-                    bottom: 58.5
+                    length: 95,        // Dài quần
+                    waist: 64,         // Lưng (eo)
+                    hip: 87,           // Vòng mông (lưng xuống 18cm)
+                    thigh: 53,         // Vòng đùi (cách đáy 5cm)
+                    leg: 14,           // Ống
+                    bottom: 58.5,      // Vòng đáy
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: 'S',
+                size: '27',
+                sizeNumber: 27,
                 measurements: {
                     length: 95,
                     waist: 68,
                     hip: 91,
                     thigh: 55,
                     leg: 15,
-                    bottom: 60
+                    bottom: 60,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: 'M',
+                size: '28',
+                sizeNumber: 28,
                 measurements: {
                     length: 96,
                     waist: 72,
                     hip: 95,
                     thigh: 57,
                     leg: 16,
-                    bottom: 61.5
+                    bottom: 61.5,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: 'L',
+                size: '29',
+                sizeNumber: 29,
                 measurements: {
                     length: 96,
                     waist: 76,
                     hip: 99,
                     thigh: 59,
                     leg: 17,
-                    bottom: 63
+                    bottom: 63,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: 'XL',
+                size: '30',
+                sizeNumber: 30,
                 measurements: {
                     length: 97,
                     waist: 80,
                     hip: 103,
                     thigh: 61,
                     leg: 18,
-                    bottom: 64.5
+                    bottom: 64.5,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: '2XL',
+                size: '31',
+                sizeNumber: 31,
                 measurements: {
                     length: 97,
                     waist: 84,
                     hip: 107,
                     thigh: 63,
                     leg: 18,
-                    bottom: 66
+                    bottom: 66,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: '3XL',
+                size: '32',
+                sizeNumber: 32,
                 measurements: {
                     length: 98,
                     waist: 88,
                     hip: 111,
                     thigh: 65,
                     leg: 19,
-                    bottom: 67.5
+                    bottom: 67.5,
+                    note: "Quần lưng cao"
                 }
             },
             {
-                size: '4XL',
+                size: '33',
+                sizeNumber: 33,
                 measurements: {
                     length: 98,
                     waist: 92,
                     hip: 115,
                     thigh: 67,
                     leg: 19,
-                    bottom: 69
+                    bottom: 69,
+                    note: "Quần lưng cao"
                 }
             }
         ],
