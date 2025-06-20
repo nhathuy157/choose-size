@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tư vấn chọn Size</title>    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="main-container">
+        <h1>Tư vấn chọn Size quần áo</h1>
+        
+        <div class="content-wrapper">
+            <!-- Form bên trái -->
+            <div class="input-section">
+                <form id="sizeForm">
+                    <div class="form-group">
+                        <label for="productType">Loại sản phẩm:</label>                        <select id="productType" required>
+                            <option value="">Chọn loại sản phẩm</option>
+                            <option value="tshirt">Áo thun cổ tròn</option>
+                            <option value="shirt">Áo sơ mi</option>
+                            <option value="dress_pants">Quần tây</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Giới tính:</label>
+                        <div class="radio-group">
+                            <input type="radio" id="male" name="gender" value="male" required>
+                            <label for="male">Nam</label>
+                            <input type="radio" id="female" name="gender" value="female">
+                            <label for="female">Nữ</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="height">Chiều cao (cm):</label>
+                        <input type="number" id="height" min="140" max="200" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Cân nặng (kg):</label>
+                        <input type="number" id="weight" min="30" max="150" required>
+                    </div>
+
+                    <button type="button" id="customizeBtn" class="customize-btn">Tùy chỉnh thêm</button>
+                    <button type="submit" class="submit-btn">Tìm size phù hợp</button>
+                </form>
+
+                <!-- Modal tùy chỉnh -->
+                <div id="customizeModal" class="modal hidden">
+                    <div class="modal-content">
+                        <h3>Tùy chỉnh thêm</h3>
+                        <div class="form-group">
+                            <label for="fitPreference">Độ ôm mong muốn:</label>
+                            <select id="fitPreference">
+                                <option value="loose">Rộng</option>
+                                <option value="regular" selected>Vừa vặn</option>
+                                <option value="tight">Ôm sát</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bellyType">Dáng bụng:</label>
+                            <select id="bellyType">
+                                <option value="flat">Phẳng</option>
+                                <option value="normal" selected>Bình thường</option>
+                                <option value="round">Tròn</option>
+                            </select>
+                        </div>
+                        <button type="button" id="closeCustomize">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kết quả bên phải -->
+            <div class="result-section">
+                <div id="result" class="result hidden">
+                    <h2>Kết quả tư vấn</h2>
+                    <div class="size-card">
+                        <p class="size-result">Size phù hợp với bạn: <span id="recommendedSize"></span></p>
+                        <div class="size-details" id="sizeDetails"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="sizeData.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
