@@ -429,33 +429,44 @@ input[type="number"]:focus {
     }
     
     .main-container {
-        padding: 15px;
-        height: auto;
+        padding: 10px;
+        margin: 10px;
         max-height: none;
     }
 
     .content-wrapper {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 10px;
+    }
+
+    /* Ẩn tất cả section trừ product grid */
+    #measurementForm, 
+    .result-section {
+        display: none;
+    }
+
+    /* Hiển thị product grid mặc định */
+    #productGrid {
+        display: block;
+    }
+
+    .section-column.active {
+        display: block;
     }
 
     .product-grid {
-        max-height: 300px;
-        flex-direction: row;
-        flex-wrap: wrap;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 
-    .product-card {
-        width: calc(50% - 5px);
+    #measurementForm {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 
-    .input-section, 
     .result-section {
-        max-height: none;
-    }
-
-    .size-chart-container {
-        max-height: 300px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 }
 

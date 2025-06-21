@@ -5,8 +5,34 @@ const customSettings = {
     showAllSizes: true,
     fitPreference: 'regular',
     bellyType: 'normal',
-    modified: false // Thêm trạng thái để theo dõi việc tùy chỉnh
+    modified: false
 };
+
+// Thêm function để kiểm tra mobile view
+function isMobileView() {
+    return window.innerWidth <= 768;
+}
+
+// Function để chuyển đổi section trên mobile
+function switchToSection(sectionNumber) {
+    if (!isMobileView()) return;
+
+    const sections = [
+        document.getElementById('productGrid'),
+        document.getElementById('measurementForm'),
+        document.querySelector('.result-section')
+    ];
+
+    sections.forEach((section, index) => {
+        if (index + 1 === sectionNumber) {
+            section.classList.add('active');
+            section.style.display = 'block';
+        } else {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        }
+    });
+}
 
 // DOM Elements
 const form = document.getElementById('sizeForm');
@@ -68,14 +94,6 @@ function handleProductSelection(productType) {
     measurementForm.classList.remove('hidden');
     measurementForm.style.display = 'block';
     
-    // Reset bảng size highlight
-    const sizeRows = document.querySelectorAll('.size-chart tr');
-    sizeRows.forEach(row => {
-        row.querySelectorAll('td').forEach(td => {
-            td.classList.remove('highlight', 'suggested');
-        });
-    });
-    
     // Cập nhật thông tin sản phẩm đã chọn
     document.querySelector('.selected-product').style.display = 'flex';
     document.getElementById('selectedProductIcon').innerHTML = product.icon;
@@ -87,6 +105,11 @@ function handleProductSelection(productType) {
     
     // Hiển thị bảng size mới
     displaySizeChart(productType);
+
+    // Chuyển đến section 2 trên mobile
+    if (isMobileView()) {
+        switchToSection(2);
+    }
 }
 
 function handleGenderChange() {
@@ -107,7 +130,7 @@ function handleInputChange() {
     const measurements = {};
     let isValid = true;
 
-    // Kiểm tra các trường bắt buộc: chiều cao, cân nặng và giới tính
+    // Kiểm tra các trường bắt buộc
     product.requiredMeasurements.forEach(measurement => {
         const value = parseFloat(document.getElementById(measurement)?.value);
         if (!value || isNaN(value)) {
@@ -117,7 +140,7 @@ function handleInputChange() {
         measurements[measurement] = value;
     });
 
-    // Thu thập thêm các trường tùy chọn nếu có
+    // Thu thập các trường tùy chọn
     if (product.optionalMeasurements) {
         product.optionalMeasurements.forEach(measurement => {
             const value = parseFloat(document.getElementById(measurement)?.value);
@@ -130,6 +153,11 @@ function handleInputChange() {
     if (!isValid || !validateMeasurements(measurements)) return;
 
     updateSize(measurements, gender);
+
+    // Chuyển đến section 3 trên mobile khi có kết quả
+    if (isMobileView()) {
+        switchToSection(3);
+    }
 }
 
 function updateSize(measurements, gender) {
