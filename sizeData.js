@@ -1,23 +1,23 @@
 const sizeData = {    products: {
         tshirt: {
-            name: "Áo thun cổ tròn",
+            name: "Áo thun",
             icon: "👕",
             requiredMeasurements: ["height", "weight"],
             optionalMeasurements: ["chest"],
             sizeType: "letter", // S, M, L, etc.
             sizeChart: {
                 male: [
-                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "92-96", length: "68-70" }},
-                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "96-100", length: "70-72" }},
-                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "100-104", length: "72-74" }},
-                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "104-108", length: "74-76" }},
-                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "108-112", length: "76-78" }}
+                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "92-98", length: "68-71" }},
+                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "96-102", length: "70-73" }},
+                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "100-106", length: "72-75" }},
+                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "104-110", length: "74-77" }},
+                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "108-114", length: "76-79" }}
                 ],
                 female: [
-                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "84-88", length: "64-66" }},
-                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "88-92", length: "66-68" }},
-                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "92-96", length: "68-70" }},
-                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "96-100", length: "70-72" }}
+                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "84-90", length: "64-67" }},
+                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "88-94", length: "66-69" }},
+                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "92-98", length: "68-71" }},
+                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "96-102", length: "70-73" }}
                 ]
             }
         },        dress_pants: {
@@ -44,28 +44,7 @@ const sizeData = {    products: {
                     { size: "30", measurements: { waist: 76, hip: 94, thigh: 56, length: 98, leg: 16 }}
                 ]
             }
-        },        polo: {
-            name: "Áo Polo",
-            icon: "👕",
-            requiredMeasurements: ["height", "weight"],
-            optionalMeasurements: ["chest"],
-            sizeType: "letter",
-            sizeChart: {
-                male: [
-                    { size: "S", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "94-98", length: "69-71" }},
-                    { size: "M", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "98-102", length: "71-73" }},
-                    { size: "L", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "102-106", length: "73-75" }},
-                    { size: "XL", height: { min: 170, max: 180 }, weight: { min: 70, max: 85 }, measurements: { chest: "106-110", length: "75-77" }},
-                    { size: "2XL", height: { min: 175, max: 185 }, weight: { min: 80, max: 95 }, measurements: { chest: "110-114", length: "77-79" }}
-                ],
-                female: [
-                    { size: "S", height: { min: 150, max: 160 }, weight: { min: 40, max: 50 }, measurements: { chest: "86-90", length: "65-67" }},
-                    { size: "M", height: { min: 155, max: 165 }, weight: { min: 45, max: 55 }, measurements: { chest: "90-94", length: "67-69" }},
-                    { size: "L", height: { min: 160, max: 170 }, weight: { min: 50, max: 65 }, measurements: { chest: "94-98", length: "69-71" }},
-                    { size: "XL", height: { min: 165, max: 175 }, weight: { min: 60, max: 75 }, measurements: { chest: "98-102", length: "71-73" }}
-                ]
-            }
-        },        shirt: {
+        },shirt: {
             name: "Áo sơ mi",
             icon: "👔",
             requiredMeasurements: ["height", "weight"],
