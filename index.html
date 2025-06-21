@@ -60,12 +60,25 @@
                         <button type="button" id="closeCustomize">Xác nhận</button>
                     </div>
                 </div>
-            </div>            <!-- Kết quả bên phải -->
-            <div class="result-section">                <div id="result" class="result">
+            </div>            <!-- Kết quả bên phải -->            <div class="result-section">                <div id="result" class="result hidden">
                     <h2>Kết quả tư vấn</h2>
+                    <div class="size-card highlight">
+                        <div class="size-result-wrapper">
+                            <div class="size-result">
+                                Size: <span id="recommendedSize"></span>
+                            </div>
+                            <span class="best-fit-badge">Phù hợp nhất</span>
+                        </div>
+                    </div>
+                </div>                <div id="alternativeResult" class="result hidden">
+                    <h2>Lựa chọn thay thế</h2>
                     <div class="size-card">
-                        <p class="size-result">Size phù hợp với bạn: <span id="recommendedSize"></span></p>
-                        <div class="size-details" id="sizeDetails"></div>
+                        <div class="size-result-wrapper">
+                            <div class="size-result">
+                                Size: <span id="alternativeSize">-</span>
+                            </div>
+                        </div>
+                        <p class="size-explanation" id="alternativeSizeExplanation"></p>
                     </div>
                 </div>
                 <div class="size-reference">

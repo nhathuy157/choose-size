@@ -4,7 +4,8 @@ const customSettings = {
     highlightBestMatch: true,
     showAllSizes: true,
     fitPreference: 'regular',
-    bellyType: 'normal'
+    bellyType: 'normal',
+    modified: false // Thêm trạng thái để theo dõi việc tùy chỉnh
 };
 
 // DOM Elements
@@ -42,10 +43,38 @@ function handleProductSelection(productType) {
     selectedProduct = productType;
     const product = sizeData.products[productType];
     
+    // Reset tất cả các input về rỗng
+    const allInputs = document.querySelectorAll('#measurementInputs input');
+    allInputs.forEach(input => {
+        input.value = '';
+    });
+    
+    // Reset các tùy chỉnh và kết quả
+    customSettings.fitPreference = 'regular';
+    customSettings.bellyType = 'normal';
+    customSettings.modified = false;
+    
+    // Ẩn tất cả các phần kết quả và bảng size
+    document.getElementById('result').classList.add('hidden');
+    document.getElementById('alternativeResult').classList.add('hidden');
+    document.querySelector('.size-reference').classList.add('hidden');
+    
+    // Reset các giá trị trong form tùy chỉnh
+    document.getElementById('fitPreference').value = 'regular';
+    document.getElementById('bellyType').value = 'normal';
+    
     // Hiển thị form nhập liệu và đảm bảo nó không bị ẩn
     const measurementForm = document.getElementById('measurementForm');
     measurementForm.classList.remove('hidden');
     measurementForm.style.display = 'block';
+    
+    // Reset bảng size highlight
+    const sizeRows = document.querySelectorAll('.size-chart tr');
+    sizeRows.forEach(row => {
+        row.querySelectorAll('td').forEach(td => {
+            td.classList.remove('highlight', 'suggested');
+        });
+    });
     
     // Cập nhật thông tin sản phẩm đã chọn
     document.querySelector('.selected-product').style.display = 'flex';
@@ -53,10 +82,10 @@ function handleProductSelection(productType) {
     document.getElementById('selectedProductName').textContent = product.name;
     document.getElementById('productType').value = productType;
 
-    // Tạo các trường nhập liệu
+    // Tạo các trường nhập liệu mới
     createMeasurementInputs(product);
     
-    // Hiển thị bảng size
+    // Hiển thị bảng size mới
     displaySizeChart(productType);
 }
 
@@ -80,28 +109,25 @@ function handleInputChange() {
 
     // Kiểm tra các trường bắt buộc: chiều cao, cân nặng và giới tính
     product.requiredMeasurements.forEach(measurement => {
-        const input = document.getElementById(measurement);
-        if (!input?.value) {
+        const value = parseFloat(document.getElementById(measurement)?.value);
+        if (!value || isNaN(value)) {
             isValid = false;
             return;
         }
-        measurements[measurement] = parseFloat(input.value);
+        measurements[measurement] = value;
     });
 
     // Thu thập thêm các trường tùy chọn nếu có
     if (product.optionalMeasurements) {
         product.optionalMeasurements.forEach(measurement => {
-            const input = document.getElementById(measurement);
-            if (input?.value) {
-                measurements[measurement] = parseFloat(input.value);
+            const value = parseFloat(document.getElementById(measurement)?.value);
+            if (value && !isNaN(value)) {
+                measurements[measurement] = value;
             }
         });
     }
 
-    if (!isValid || !validateMeasurements(measurements)) {
-        hideResult();
-        return;
-    }
+    if (!isValid || !validateMeasurements(measurements)) return;
 
     updateSize(measurements, gender);
 }
@@ -111,17 +137,124 @@ function updateSize(measurements, gender) {
     const weight = measurements.weight;
     const baseSize = findBaseSize(selectedProduct, gender, height, weight);
     
-    if (!baseSize) {
-        hideResult();
-        return;
+    if (!baseSize) return;
+
+    const adjustedSize = adjustSize(baseSize, customSettings, selectedProduct);
+    
+    // Cập nhật kết quả chính (hiển thị size gốc)
+    const result = document.getElementById('result');
+    result.classList.remove('hidden');
+    document.getElementById('recommendedSize').textContent = baseSize.size;
+
+    // Hiển thị lại bảng size tham khảo
+    document.querySelector('.size-reference').classList.remove('hidden');
+
+    // Xóa tất cả highlight cũ
+    document.querySelectorAll('.size-chart tr').forEach(row => {
+        row.classList.remove('highlight', 'alternative-highlight');
+    });
+
+    // Highlight hàng của size gốc
+    const baseRow = document.querySelector(`.size-chart tr[data-size="${baseSize.size}"]`);
+    if (baseRow) {
+        baseRow.classList.add('highlight');
     }
 
-    const finalSize = adjustSize(baseSize, customSettings, selectedProduct);
-    updateSizeDisplay(finalSize, baseSize, measurements);
+    // Xử lý size thay thế (hiển thị size đã điều chỉnh)
+    const alternativeResult = document.getElementById('alternativeResult');
+    
+    // Chỉ hiển thị kết quả thay thế khi đã có tùy chỉnh
+    if (customSettings.modified) {
+        alternativeResult.classList.remove('hidden');
+        document.getElementById('alternativeSize').textContent = adjustedSize.size;
+
+        // Highlight hàng của size thay thế với màu khác
+        if (adjustedSize.size !== baseSize.size) {
+            const adjustedRow = document.querySelector(`.size-chart tr[data-size="${adjustedSize.size}"]`);
+            if (adjustedRow) {
+                adjustedRow.classList.add('alternative-highlight');
+            }
+        }
+
+        // Tạo giải thích
+        let explanation = `Size ${baseSize.size} `;
+        let changes = [];
+
+        if (customSettings.fitPreference === 'loose') {
+            changes.push('tăng 1 size do chọn độ ôm rộng');
+        } else if (customSettings.fitPreference === 'tight') {
+            changes.push('giảm 1 size do chọn độ ôm sát');
+        }
+        
+        if (customSettings.bellyType === 'round') {
+            changes.push('tăng 1 size do dáng bụng tròn');
+        }
+
+        if (changes.length > 0) {
+            explanation += `được điều chỉnh thành ${adjustedSize.size} do ${changes.join(' và ')}`;
+        }
+
+        document.getElementById('alternativeSizeExplanation').textContent = explanation;
+    } else {
+        alternativeResult.classList.add('hidden');
+    }
+
     updateSizeChartHighlight();
 }
 
-// UI update functions
+function getAlternativeSizeExplanation(fitPreference, bellyType) {
+    const fitText = {
+        'loose': 'rộng hơn',
+        'tight': 'ôm hơn',
+        'regular': 'vừa vặn'
+    }[fitPreference];
+
+    const bellyText = {
+        'flat': 'phẳng',
+        'round': 'tròn',
+        'normal': 'bình thường'
+    }[bellyType];
+
+    let explanation = 'Kích thước này được điều chỉnh dựa trên ';
+    const adjustments = [];
+
+    if (fitPreference !== 'regular') {
+        adjustments.push(`yêu cầu mặc ${fitText}`);
+    }
+    if (bellyType !== 'normal') {
+        adjustments.push(`dáng bụng ${bellyText}`);
+    }
+
+    return explanation + adjustments.join(' và ') + ' của bạn.';
+}
+
+function calculateAlternativeSize(baseSize, preferences) {
+    if (!baseSize) return '';
+    
+    // Convert baseSize to number if it's a letter size
+    const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    const currentIndex = sizes.indexOf(baseSize);
+    
+    // Calculate adjustment based on preferences
+    let sizeAdjustment = 0;
+    if (preferences.fitPreference === 'loose') sizeAdjustment += 1;
+    if (preferences.fitPreference === 'tight') sizeAdjustment -= 1;
+    if (preferences.bellyType === 'round') sizeAdjustment += 1;
+    if (preferences.bellyType === 'flat') sizeAdjustment -= 1;
+    
+    if (currentIndex !== -1) {
+        // Handle letter sizes
+        const newIndex = Math.max(0, Math.min(sizes.length - 1, currentIndex + sizeAdjustment));
+        return sizes[newIndex];
+    } else if (!isNaN(parseInt(baseSize))) {
+        // Handle numeric sizes
+        const numericSize = parseInt(baseSize);
+        return Math.max(0, numericSize + sizeAdjustment).toString();
+    }
+    
+    return ''; // Return empty if size cannot be calculated
+}
+
 function updateUI(productType) {
     const product = sizeData.products[productType];
 
@@ -190,10 +323,11 @@ function displaySizeChart(productType) {
 }
 
 function createMeasurementInputs(product) {
-    const container = document.getElementById('measurementInputs');
-    container.innerHTML = '';
-
-    // Thêm các trường đo lường bắt buộc
+    const mainContainer = document.getElementById('measurementInputs');
+    const modalContainer = document.querySelector('.modal-content');
+    mainContainer.innerHTML = '';
+    
+    // Định nghĩa labels cho các trường đo
     const measurementLabels = {
         'height': 'Chiều cao (cm)',
         'weight': 'Cân nặng (kg)',
@@ -207,15 +341,16 @@ function createMeasurementInputs(product) {
         'inseam': 'Dài quần (cm)'
     };
 
-    // Thêm các trường đo bắt buộc
-    if (product.requiredMeasurements) {
-        product.requiredMeasurements.forEach(measurement => {
+    // Tạo các trường cơ bản (height và weight) trong form chính
+    const basicMeasurements = ['height', 'weight'];
+    basicMeasurements.forEach(measurement => {
+        if (product.requiredMeasurements.includes(measurement)) {
             const div = document.createElement('div');
             div.className = 'measurement-input form-group required';
             
             const label = document.createElement('label');
             label.htmlFor = measurement;
-            label.textContent = measurementLabels[measurement] || measurement;
+            label.textContent = measurementLabels[measurement];
             
             const input = document.createElement('input');
             input.type = 'number';
@@ -231,37 +366,53 @@ function createMeasurementInputs(product) {
             
             div.appendChild(label);
             div.appendChild(input);
-            container.appendChild(div);
-        });
-    }
+            mainContainer.appendChild(div);
+        }
+    });
 
-    // Thêm các trường đo tùy chọn
-    if (product.optionalMeasurements) {
-        product.optionalMeasurements.forEach(measurement => {
-            const div = document.createElement('div');
-            div.className = 'measurement-input form-group';
-            
-            const label = document.createElement('label');
-            label.htmlFor = measurement;
-            label.textContent = measurementLabels[measurement] || measurement;
-            
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.id = measurement;
-            input.name = measurement;
-            input.required = false;
-            input.min = '0';
-            input.step = '0.5';
-            input.addEventListener('input', () => {
-                updateSizeChartHighlight();
-                handleInputChange();
-            });
-            
-            div.appendChild(label);
-            div.appendChild(input);
-            container.appendChild(div);
-        });
+    // Tìm div chứa các trường tùy chọn trong modal
+    let optionalFieldsContainer = modalContainer.querySelector('.optional-measurements');
+    if (!optionalFieldsContainer) {
+        optionalFieldsContainer = document.createElement('div');
+        optionalFieldsContainer.className = 'optional-measurements';
+        // Chèn container trước nút Xác nhận
+        const confirmButton = modalContainer.querySelector('button');
+        modalContainer.insertBefore(optionalFieldsContainer, confirmButton);
     }
+    optionalFieldsContainer.innerHTML = '<h4>Số đo chi tiết:</h4>';
+
+    // Di chuyển các trường đo còn lại vào modal
+    const otherMeasurements = product.requiredMeasurements
+        .filter(m => !basicMeasurements.includes(m))
+        .concat(product.optionalMeasurements || []);
+
+    otherMeasurements.forEach(measurement => {
+        const div = document.createElement('div');
+        div.className = 'measurement-input form-group';
+        if (product.requiredMeasurements.includes(measurement)) {
+            div.classList.add('required');
+        }
+        
+        const label = document.createElement('label');
+        label.htmlFor = measurement;
+        label.textContent = measurementLabels[measurement];
+        
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = measurement;
+        input.name = measurement;
+        input.min = '0';
+        input.step = '0.5';
+        input.required = product.requiredMeasurements.includes(measurement);
+        input.addEventListener('input', () => {
+            updateSizeChartHighlight();
+            handleInputChange();
+        });
+        
+        div.appendChild(label);
+        div.appendChild(input);
+        optionalFieldsContainer.appendChild(div);
+    });
 }
 
 function updateSizeDisplay(finalSize, baseSize, measurements) {
@@ -404,21 +555,35 @@ function findRegularSize(sizes, height, weight) {
 
 function adjustSize(baseSize, preferences, productType) {
     if (!baseSize) return null;
+    // Nếu là quần thì trả về size gốc
     if (productType === 'dress_pants') return baseSize;
-    if (!preferences || 
-        (preferences.fitPreference === 'regular' && preferences.bellyType === 'normal')) {
-        return baseSize;
-    }
+    
+    // Nếu không có tùy chỉnh đặc biệt hoặc tất cả đều ở mức bình thường
+    if (!preferences) return baseSize;
 
     const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'];
     let currentIndex = sizeOrder.indexOf(baseSize.size);
     
-    if (preferences.fitPreference === 'loose') currentIndex += 1;
-    if (preferences.fitPreference === 'tight') currentIndex -= 1;
-    if (preferences.bellyType === 'round') currentIndex += 1;
+    if (currentIndex === -1) return baseSize; // Nếu không tìm thấy size trong danh sách
 
+    // Điều chỉnh theo độ ôm
+    if (preferences.fitPreference === 'loose') {
+        currentIndex += 1; // Rộng +1 size
+    } else if (preferences.fitPreference === 'tight') {
+        currentIndex -= 1; // Sát -1 size
+    }
+    // Vừa (regular) giữ nguyên
+
+    // Điều chỉnh theo dáng bụng
+    if (preferences.bellyType === 'round') {
+        currentIndex += 1; // Bụng tròn +1 size
+    }
+    // Bụng phẳng hoặc bình thường giữ nguyên
+
+    // Đảm bảo index không vượt quá giới hạn của mảng
     currentIndex = Math.max(0, Math.min(currentIndex, sizeOrder.length - 1));
 
+    // Trả về size mới với các thuộc tính của baseSize
     return {
         ...baseSize,
         size: sizeOrder[currentIndex]
@@ -521,22 +686,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    customizeBtn.addEventListener('click', () => {
-        customizeModal.classList.remove('hidden');
+    // Xử lý sự kiện cho modal tùy chỉnh
+    document.getElementById('customizeBtn').addEventListener('click', () => {
+        document.getElementById('customizeModal').classList.remove('hidden');
     });
 
-    closeCustomizeBtn.addEventListener('click', handleCustomizeClose);
+    document.getElementById('closeCustomize').addEventListener('click', handleCustomizeClose);
+    
+    // Event listeners cho các controls tùy chỉnh
+    document.getElementById('fitPreference').addEventListener('change', () => {
+        customSettings.fitPreference = document.getElementById('fitPreference').value;
+    });
 
-    customizeModal.addEventListener('click', (e) => {
-        if (e.target === customizeModal) {
-            handleCustomizeClose();
-        }
+    document.getElementById('bellyType').addEventListener('change', () => {
+        customSettings.bellyType = document.getElementById('bellyType').value;
     });
 });
 
+// Xử lý đóng modal tùy chỉnh và cập nhật kết quả
 function handleCustomizeClose() {
+    const newFitPreference = document.getElementById('fitPreference').value;
+    const newBellyType = document.getElementById('bellyType').value;
+    
+    // Kiểm tra xem có sự thay đổi so với mặc định không
+    customSettings.modified = (newFitPreference !== 'regular' || newBellyType !== 'normal');
+    
+    // Cập nhật các tùy chọn
+    customSettings.fitPreference = newFitPreference;
+    customSettings.bellyType = newBellyType;
+    
+    // Ẩn modal
     customizeModal.classList.add('hidden');
-    customSettings.fitPreference = document.getElementById('fitPreference').value;
-    customSettings.bellyType = document.getElementById('bellyType').value;
+    
+    // Kích hoạt lại việc tính toán size để cập nhật kết quả
     handleInputChange();
+}
+
+// Hàm thu thập các số đo hiện tại
+function collectCurrentMeasurements() {
+    const measurements = {};
+    const product = sizeData.products[selectedProduct];
+    
+    if (!product) return null;
+
+    // Thu thập các số đo bắt buộc
+    let isValid = true;
+    product.requiredMeasurements.forEach(measurement => {
+        const input = document.getElementById(measurement);
+        if (input && input.value) {
+            measurements[measurement] = parseFloat(input.value);
+        } else {
+            isValid = false;
+        }
+    });
+
+    // Thu thập các số đo tùy chọn nếu có
+    if (product.optionalMeasurements) {
+        product.optionalMeasurements.forEach(measurement => {
+            const input = document.getElementById(measurement);
+            if (input && input.value) {
+                measurements[measurement] = parseFloat(input.value);
+            }
+        });
+    }
+
+    return isValid ? measurements : null;
 }

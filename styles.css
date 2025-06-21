@@ -67,14 +67,14 @@ body {
 
 .result-section {
     width: 100%;
-    padding: 15px;
+    padding: 8px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    max-height: none;  /* Bỏ giới hạn chiều cao */
+    gap: 5px;
+    max-height: none;
     overflow-y: visible;
 }
 
@@ -157,30 +157,79 @@ input[type="number"]:focus {
 }
 
 .result {
-    background: #f7fafc;
-    padding: 15px;
+    background: transparent;
+    padding: 5px;
     border-radius: 8px;
-    margin-bottom: 0;
+    margin-bottom: 3px;
 }
 
 .result h2 {
-    color: #2d3748;
-    margin-bottom: 15px;
-    font-size: 18px;
+    color: #1a365d;
+    font-size: 15px;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.result.hidden {
+    display: none;
 }
 
 .size-card {
     background: white;
-    padding: 20px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    margin-bottom: 3px;
+}
+
+.size-card.highlight {
+    border: 1px solid #60a5fa;
+    background-color: #f0f7ff;
+}
+
+.size-result-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .size-result {
-    font-size: 18px;
+    font-size: 16px;
     color: #2d3748;
-    margin-bottom: 15px;
-    font-weight: 600;
+    font-weight: 500;
+}
+
+.best-fit-badge {
+    background-color: #60a5fa;
+    color: white;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+#result .size-card:hover {
+    box-shadow: 0 2px 4px rgba(96, 165, 250, 0.1);
+}
+
+#alternativeResult .size-card {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+}
+
+.size-explanation {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4a5568;
+    font-style: italic;
+}
+
+#alternativeResult .size-explanation {
+    color: #4a5568;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    margin-top: 15px;
 }
 
 .size-details {
@@ -207,6 +256,8 @@ input[type="number"]:focus {
     border-radius: 10px;
     width: 90%;
     max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .modal h3 {
@@ -303,41 +354,59 @@ input[type="number"]:focus {
 
 .size-reference {
     background: #f7fafc;
-    padding: 15px;
+    padding: 6px;
     border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 2px;
 }
 
 .size-reference h2 {
     color: #2d3748;
-    margin-bottom: 15px;
-    font-size: 18px;
+    margin-bottom: 6px;
+    font-size: 15px;
 }
 
 .size-chart {
     background: white;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    overflow: visible;  /* Bỏ scroll */
-    margin-top: 15px;
-    width: 100%;
+    padding: 6px;
+    overflow: visible;
+    margin-top: 3px;
 }
 
 .size-chart table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
-    table-layout: fixed;  /* Cố định độ rộng cột */
+    font-size: 13px;
+    table-layout: fixed;
 }
 
 .size-chart th,
 .size-chart td {
-    padding: 8px 6px;
+    padding: 6px 4px;
     text-align: center;
     border: 1px solid #e2e8f0;
-    word-wrap: break-word;  /* Cho phép text wrap */
+    word-wrap: break-word;
     hyphens: auto;
+}
+
+.size-chart tr.highlight {
+    background-color: #ebf8ff;
+}
+
+.size-chart tr.highlight td {
+    background-color: #ebf8ff;
+    font-weight: 500;
+}
+
+.size-chart tr.alternative-highlight {
+    background-color: #faf5ff;
+}
+
+.size-chart tr.alternative-highlight td {
+    background-color: #faf5ff;
+    font-weight: 500;
+    color: #6b46c1;
 }
 
 /* Form styles for better layout */
@@ -394,4 +463,30 @@ input[type="number"]:focus {
     .product-grid {
         grid-template-columns: repeat(4, 1fr);  /* Tăng từ 3 lên 4 cột trên tablet */
     }
+}
+
+.optional-measurements {
+    margin: 15px 0;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.optional-measurements h4 {
+    margin-bottom: 15px;
+    color: #2d3748;
+    font-size: 16px;
+}
+
+.optional-measurements .measurement-input {
+    margin-bottom: 12px;
+}
+
+.optional-measurements input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    color: #2d3748;
 }
