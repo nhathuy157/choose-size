@@ -261,9 +261,15 @@ function updateSize(measurements, gender) {
                         'thigh': 'đùi',
                         'inseam': 'dài quần'
                     };
-                    return labels[m] || m;
+                    return `${labels[m] || m} (${measurements[m]}cm)`;
                 }).join(', ');
-                explanation = `Size ${adjustedSize.size} dựa trên số đo ${measurementNames} của bạn`;
+                explanation = `Size ${adjustedSize.size} dựa trên số đo ${measurementNames}`;
+                
+                // Thêm thông tin về height/weight nếu khác nhau
+                const heightWeightSize = findRegularSize(sizeData.products[selectedProduct].sizeChart[gender], measurements.height, measurements.weight);
+                if (heightWeightSize && heightWeightSize.size !== adjustedSize.size) {
+                    explanation += `. Lưu ý: Theo chiều cao/cân nặng sẽ là size ${heightWeightSize.size}, nhưng số đo chi tiết phù hợp hơn với size ${adjustedSize.size}`;
+                }
             } else {
                 explanation += `được điều chỉnh thành ${adjustedSize.size} dựa trên số đo chi tiết`;
             }
@@ -607,19 +613,45 @@ function findBaseSize(productType, gender, height, weight, allMeasurements = {})
     
     console.log('Available detailed measurements:', detailedMeasurements);
     
-    // Nếu có số đo chi tiết, ưu tiên dùng chúng để tìm size chính xác hơn
+    // Tìm size dựa trên height/weight trước
+    const sizeByHeightWeight = findRegularSize(sizes, height, weight);
+    console.log('Size by height/weight:', sizeByHeightWeight?.size);
+    
+    // Nếu có số đo chi tiết, tìm size dựa trên chúng
+    let sizeByDetailedMeasurements = null;
     if (detailedMeasurements.length > 0) {
-        const sizeByDetailedMeasurements = findSizeByDetailedMeasurements(sizes, allMeasurements);
-        if (sizeByDetailedMeasurements) {
-            console.log('Found size by detailed measurements:', sizeByDetailedMeasurements.size);
+        sizeByDetailedMeasurements = findSizeByDetailedMeasurements(sizes, allMeasurements);
+        console.log('Size by detailed measurements:', sizeByDetailedMeasurements?.size);
+        
+        // So sánh và quyết định
+        if (sizeByDetailedMeasurements && sizeByHeightWeight) {
+            if (sizeByDetailedMeasurements.size === sizeByHeightWeight.size) {
+                console.log('✅ Both methods agree on size:', sizeByDetailedMeasurements.size);
+                return sizeByDetailedMeasurements;
+            } else {
+                console.log('⚠️  Conflict detected!');
+                console.log(`   Height/Weight suggests: ${sizeByHeightWeight.size}`);
+                console.log(`   Detailed measurements suggest: ${sizeByDetailedMeasurements.size}`);
+                
+                // Ưu tiên detailed measurements nếu có nhiều measurement khớp
+                const detailedMeasurementCount = detailedMeasurements.length;
+                if (detailedMeasurementCount >= 2) {
+                    console.log('🎯 Using detailed measurements (multiple measurements available)');
+                    return sizeByDetailedMeasurements;
+                } else {
+                    console.log('⚖️  Using average between the two suggestions');
+                    return findAverageSize(sizes, sizeByHeightWeight, sizeByDetailedMeasurements);
+                }
+            }
+        } else if (sizeByDetailedMeasurements) {
+            console.log('🎯 Using detailed measurements only');
             return sizeByDetailedMeasurements;
-        } else {
-            console.log('No good match found with detailed measurements, falling back to height/weight');
         }
     }
-
-    // Fallback về phương pháp cũ dùng height/weight
-    return findRegularSize(sizes, height, weight);
+    
+    // Fallback về height/weight
+    console.log('📏 Using height/weight method');
+    return sizeByHeightWeight;
 }
 
 function findPantsSize(sizes, weight) {
@@ -748,12 +780,19 @@ function adjustSize(baseSize, preferences, productType) {
 function findSizeByDetailedMeasurements(sizes, measurements) {
     let bestMatch = null;
     let bestScore = -1;
+    let detailedAnalysis = {};
     
     console.log('Finding size by detailed measurements:', measurements);
     
     for (const size of sizes) {
         let score = 0;
         let matchCount = 0;
+        let sizeAnalysis = {
+            size: size.size,
+            matches: [],
+            conflicts: [],
+            totalScore: 0
+        };
         
         // Kiểm tra từng số đo chi tiết
         Object.keys(measurements).forEach(measurement => {
@@ -769,7 +808,14 @@ function findSizeByDetailedMeasurements(sizes, measurements) {
                     if (userValue >= min && userValue <= max) {
                         score += 3; // Điểm cao cho khớp chính xác
                         matchCount++;
-                        console.log(`${measurement}: ${userValue} fits in range ${min}-${max} for size ${size.size} (+3 points)`);
+                        sizeAnalysis.matches.push({
+                            measurement,
+                            userValue,
+                            range: `${min}-${max}`,
+                            status: 'perfect_match',
+                            points: 3
+                        });
+                        console.log(`${measurement}: ${userValue} fits perfectly in range ${min}-${max} for size ${size.size} (+3 points)`);
                     } else {
                         // Tính điểm dựa trên khoảng cách gần nhất đến range
                         const distance = Math.min(Math.abs(userValue - min), Math.abs(userValue - max));
@@ -777,7 +823,26 @@ function findSizeByDetailedMeasurements(sizes, measurements) {
                             const points = Math.max(0, 2 - distance / 2.5);
                             score += points;
                             matchCount++;
+                            sizeAnalysis.matches.push({
+                                measurement,
+                                userValue,
+                                range: `${min}-${max}`,
+                                status: 'close_match',
+                                distance,
+                                points: parseFloat(points.toFixed(1))
+                            });
                             console.log(`${measurement}: ${userValue} is ${distance}cm from range ${min}-${max} for size ${size.size} (+${points.toFixed(1)} points)`);
+                        } else {
+                            // Quá xa, nhưng vẫn ghi nhận để phân tích
+                            sizeAnalysis.conflicts.push({
+                                measurement,
+                                userValue,
+                                range: `${min}-${max}`,
+                                status: 'too_far',
+                                distance,
+                                points: 0
+                            });
+                            console.log(`${measurement}: ${userValue} is too far (${distance}cm) from range ${min}-${max} for size ${size.size} (0 points)`);
                         }
                     }
                 } else if (typeof sizeValue === 'number') {
@@ -787,7 +852,25 @@ function findSizeByDetailedMeasurements(sizes, measurements) {
                         const points = Math.max(0, 3 - distance / 2);
                         score += points;
                         matchCount++;
+                        sizeAnalysis.matches.push({
+                            measurement,
+                            userValue,
+                            expectedValue: sizeValue,
+                            status: distance === 0 ? 'perfect_match' : 'close_match',
+                            distance,
+                            points: parseFloat(points.toFixed(1))
+                        });
                         console.log(`${measurement}: ${userValue} vs ${sizeValue} for size ${size.size}, distance: ${distance} (+${points.toFixed(1)} points)`);
+                    } else {
+                        sizeAnalysis.conflicts.push({
+                            measurement,
+                            userValue,
+                            expectedValue: sizeValue,
+                            status: 'too_far',
+                            distance,
+                            points: 0
+                        });
+                        console.log(`${measurement}: ${userValue} vs ${sizeValue} for size ${size.size}, too far: ${distance}cm (0 points)`);
                     }
                 }
             }
@@ -797,6 +880,9 @@ function findSizeByDetailedMeasurements(sizes, measurements) {
         const avgScore = matchCount > 0 ? score / matchCount : 0;
         const finalScore = avgScore * (1 + matchCount * 0.1); // Bonus cho nhiều measurement
         
+        sizeAnalysis.totalScore = finalScore;
+        detailedAnalysis[size.size] = sizeAnalysis;
+        
         console.log(`Size ${size.size}: avgScore=${avgScore.toFixed(2)}, matchCount=${matchCount}, finalScore=${finalScore.toFixed(2)}`);
         
         if (finalScore > bestScore) {
@@ -805,10 +891,51 @@ function findSizeByDetailedMeasurements(sizes, measurements) {
         }
     }
     
+    // Log detailed analysis
+    console.log('=== DETAILED SIZE ANALYSIS ===');
+    Object.values(detailedAnalysis).forEach(analysis => {
+        console.log(`\nSize ${analysis.size}:`);
+        console.log(`  Matches: ${analysis.matches.length}`);
+        analysis.matches.forEach(match => {
+            console.log(`    ✓ ${match.measurement}: ${match.userValue} ${match.range ? `in ${match.range}` : `vs ${match.expectedValue}`} (${match.points} pts)`);
+        });
+        console.log(`  Conflicts: ${analysis.conflicts.length}`);
+        analysis.conflicts.forEach(conflict => {
+            console.log(`    ✗ ${conflict.measurement}: ${conflict.userValue} ${conflict.range ? `vs ${conflict.range}` : `vs ${conflict.expectedValue}`} (${conflict.distance}cm off)`);
+        });
+        console.log(`  Total Score: ${analysis.totalScore.toFixed(2)}`);
+    });
+    console.log('===============================');
+    
     console.log(`Best match: Size ${bestMatch?.size} with score ${bestScore.toFixed(2)}`);
     
     // Chỉ trả về kết quả nếu có điểm số đủ tốt (ít nhất 1 measurement khớp)
     return bestScore > 0.8 ? bestMatch : null;
+}
+
+// Tìm size trung bình khi có xung đột giữa height/weight và detailed measurements
+function findAverageSize(sizes, sizeByHeightWeight, sizeByDetailedMeasurements) {
+    const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'];
+    
+    const index1 = sizeOrder.indexOf(sizeByHeightWeight.size);
+    const index2 = sizeOrder.indexOf(sizeByDetailedMeasurements.size);
+    
+    if (index1 === -1 || index2 === -1) {
+        // Nếu không tìm thấy size trong danh sách, ưu tiên detailed measurements
+        console.log('Cannot find size in order, using detailed measurements');
+        return sizeByDetailedMeasurements;
+    }
+    
+    // Tính trung bình (làm tròn về size gần nhất)
+    const averageIndex = Math.round((index1 + index2) / 2);
+    const averageSize = sizeOrder[averageIndex];
+    
+    // Tìm size object tương ứng
+    const averageSizeObj = sizes.find(size => size.size === averageSize);
+    
+    console.log(`Average size: ${sizeByHeightWeight.size} + ${sizeByDetailedMeasurements.size} = ${averageSize}`);
+    
+    return averageSizeObj || sizeByDetailedMeasurements;
 }
 
 // Validation and Measurement Collection
