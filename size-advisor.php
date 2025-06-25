@@ -81,3 +81,140 @@ function size_advisor_display_mode_callback() {
     </select>
     <?php
 }
+
+// Đăng ký widget
+class Size_Advisor_Widget extends WP_Widget {
+    function __construct() {
+        parent::__construct(
+            'size_advisor_widget',
+            'Size Advisor Widget',
+            array('description' => 'Công cụ tư vấn chọn size quần áo')
+        );
+    }
+
+    public function widget($args, $instance) {
+        echo $args['before_widget'];
+        echo '<div class="size-advisor-widget">';
+        echo do_shortcode('[size_advisor]');
+        echo '</div>';
+        echo $args['after_widget'];
+    }
+}
+
+function register_size_advisor_widget() {
+    register_widget('Size_Advisor_Widget');
+}
+add_action('widgets_init', 'register_size_advisor_widget');
+
+// Thêm nút tư vấn size vào trang sản phẩm
+function add_size_advisor_button() {
+    echo '<button class="size-advisor-btn" onclick="openSizeAdvisor()">
+        <span class="dashicons dashicons-editor-help"></span>
+        Tư vấn chọn size
+    </button>';
+    
+    echo '<div class="size-advisor-overlay" id="sizeAdvisorOverlay" onclick="closeSizeAdvisor()"></div>';
+    
+    echo '<div class="size-advisor-popup" id="sizeAdvisorPopup">
+        <button class="close-popup" onclick="closeSizeAdvisor()">&times;</button>
+        ' . do_shortcode('[size_advisor]') . '
+    </div>';
+}
+add_action('woocommerce_after_add_to_cart_form', 'add_size_advisor_button');
+
+// Thêm CSS và JS cho nút và popup
+function add_size_advisor_button_styles() {
+    if (!is_product()) return;
+    ?>
+    <style>    .size-advisor-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 10px 0;
+        padding: 12px 25px;
+        background: #e31837;
+        color: white !important;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 15px;
+        width: 100%;
+        justify-content: center;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+
+    .size-advisor-btn:hover {
+        background: #c41230;
+    }
+
+    .size-advisor-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        z-index: 1000;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .size-advisor-popup.active {
+        display: block;
+    }
+
+    .size-advisor-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    .size-advisor-overlay.active {
+        display: block;
+    }
+
+    .close-popup {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    @media (max-width: 768px) {
+        .size-advisor-popup {
+            width: 95%;
+            margin: 10px;
+        }
+    }
+    </style>
+
+    <script>
+    function openSizeAdvisor() {
+        document.getElementById("sizeAdvisorOverlay").classList.add("active");
+        document.getElementById("sizeAdvisorPopup").classList.add("active");
+    }
+    
+    function closeSizeAdvisor() {
+        document.getElementById("sizeAdvisorOverlay").classList.remove("active");
+        document.getElementById("sizeAdvisorPopup").classList.remove("active");
+    }
+    </script>
+    <?php
+}
+add_action('wp_footer', 'add_size_advisor_button_styles');

@@ -163,9 +163,18 @@ function handleInputChange() {
 function updateSize(measurements, gender) {
     const height = measurements.height;
     const weight = measurements.weight;
-    const baseSize = findBaseSize(selectedProduct, gender, height, weight);
+    const baseSize = findBaseSize(selectedProduct, gender, height, weight, measurements);
     
-    if (!baseSize) return;
+    // Debug logging
+    console.log('Measurements:', measurements);
+    console.log('Selected product:', selectedProduct);
+    console.log('Gender:', gender);
+    console.log('Base size found:', baseSize);
+    
+    if (!baseSize) {
+        console.error('No base size found!');
+        return;
+    }
 
     const adjustedSize = adjustSize(baseSize, customSettings, selectedProduct);
     
@@ -191,8 +200,26 @@ function updateSize(measurements, gender) {
     // Xử lý size thay thế (hiển thị size đã điều chỉnh)
     const alternativeResult = document.getElementById('alternativeResult');
     
-    // Chỉ hiển thị kết quả thay thế khi đã có tùy chỉnh
-    if (customSettings.modified) {
+    console.log('Custom settings modified:', customSettings.modified);
+    console.log('Adjusted size:', adjustedSize.size);
+    console.log('Base size:', baseSize.size);
+    
+    // Kiểm tra có số đo chi tiết không
+    const detailedMeasurements = Object.keys(measurements).filter(key => 
+        key !== 'height' && key !== 'weight' && measurements[key]);
+    const hasDetailedMeasurements = detailedMeasurements.length > 0;
+    
+    console.log('Detailed measurements used:', detailedMeasurements);
+    
+    // Kiểm tra có thay đổi về độ ôm/dáng bụng không
+    const hasFitBellyChanges = (customSettings.fitPreference !== 'regular' || 
+                               customSettings.bellyType !== 'normal');
+    
+    // Hiển thị kết quả thay thế khi:
+    // 1. Có thay đổi độ ôm/dáng bụng, hoặc
+    // 2. Có số đo chi tiết được nhập, hoặc  
+    // 3. Size đã thay đổi so với gốc
+    if (hasFitBellyChanges || hasDetailedMeasurements || adjustedSize.size !== baseSize.size) {
         alternativeResult.classList.remove('hidden');
         document.getElementById('alternativeSize').textContent = adjustedSize.size;
 
@@ -216,10 +243,34 @@ function updateSize(measurements, gender) {
         
         if (customSettings.bellyType === 'round') {
             changes.push('tăng 1 size do dáng bụng tròn');
+        } else if (customSettings.bellyType === 'flat') {
+            changes.push('giảm 1 size do dáng bụng phẳng');
         }
 
         if (changes.length > 0) {
             explanation += `được điều chỉnh thành ${adjustedSize.size} do ${changes.join(' và ')}`;
+        } else if (hasDetailedMeasurements) {
+            if (adjustedSize.size === baseSize.size) {
+                const measurementNames = detailedMeasurements.map(m => {
+                    const labels = {
+                        'chest': 'vòng ngực',
+                        'shoulder': 'vai', 
+                        'waist': 'vòng eo',
+                        'hip': 'vòng hông',
+                        'sleeve': 'tay áo',
+                        'thigh': 'đùi',
+                        'inseam': 'dài quần'
+                    };
+                    return labels[m] || m;
+                }).join(', ');
+                explanation = `Size ${adjustedSize.size} dựa trên số đo ${measurementNames} của bạn`;
+            } else {
+                explanation += `được điều chỉnh thành ${adjustedSize.size} dựa trên số đo chi tiết`;
+            }
+        } else if (adjustedSize.size !== baseSize.size) {
+            explanation += `được điều chỉnh thành ${adjustedSize.size}`;
+        } else {
+            explanation = `Size phù hợp với tùy chỉnh của bạn: ${adjustedSize.size}`;
         }
 
         document.getElementById('alternativeSizeExplanation').textContent = explanation;
@@ -541,7 +592,7 @@ function updateSizeChartHighlight() {
     }
 }
 
-function findBaseSize(productType, gender, height, weight) {
+function findBaseSize(productType, gender, height, weight, allMeasurements = {}) {
     const product = sizeData.products[productType];
     const sizes = product?.sizeChart?.[gender];
     if (!sizes) return null;
@@ -550,14 +601,34 @@ function findBaseSize(productType, gender, height, weight) {
         return findPantsSize(sizes, weight);
     }
 
+    // Kiểm tra xem có số đo chi tiết không (ngoài height và weight)
+    const detailedMeasurements = Object.keys(allMeasurements).filter(key => 
+        key !== 'height' && key !== 'weight' && allMeasurements[key]);
+    
+    console.log('Available detailed measurements:', detailedMeasurements);
+    
+    // Nếu có số đo chi tiết, ưu tiên dùng chúng để tìm size chính xác hơn
+    if (detailedMeasurements.length > 0) {
+        const sizeByDetailedMeasurements = findSizeByDetailedMeasurements(sizes, allMeasurements);
+        if (sizeByDetailedMeasurements) {
+            console.log('Found size by detailed measurements:', sizeByDetailedMeasurements.size);
+            return sizeByDetailedMeasurements;
+        } else {
+            console.log('No good match found with detailed measurements, falling back to height/weight');
+        }
+    }
+
+    // Fallback về phương pháp cũ dùng height/weight
     return findRegularSize(sizes, height, weight);
 }
 
 function findPantsSize(sizes, weight) {
+    // Ước tính vòng eo dựa trên cân nặng
     let estimatedWaist = weight * 0.8;
     let bestMatch = null;
     let minDiff = Number.MAX_VALUE;
 
+    // Tìm size có vòng eo gần nhất
     for (const size of sizes) {
         const waist = size.measurements.waist;
         const sizeDiff = Math.abs(estimatedWaist - waist);
@@ -566,10 +637,17 @@ function findPantsSize(sizes, weight) {
             bestMatch = size;
         }
     }
+    
+    // Đảm bảo luôn trả về ít nhất 1 size
+    if (!bestMatch && sizes.length > 0) {
+        bestMatch = sizes[Math.floor(sizes.length / 2)]; // Chọn size ở giữa
+    }
+    
     return bestMatch;
 }
 
 function findRegularSize(sizes, height, weight) {
+    // Tìm size khớp chính xác trước
     for (const size of sizes) {
         if (height >= size.height?.min && 
             height <= size.height?.max && 
@@ -578,51 +656,178 @@ function findRegularSize(sizes, height, weight) {
             return size;
         }
     }
-    return null;
+    
+    // Nếu không tìm thấy size khớp chính xác, tìm size gần nhất
+    let bestMatch = null;
+    let minDistance = Number.MAX_VALUE;
+    
+    for (const size of sizes) {
+        // Tính khoảng cách từ số đo của người dùng đến khoảng của size
+        let heightDistance = 0;
+        let weightDistance = 0;
+        
+        // Khoảng cách chiều cao
+        if (height < size.height?.min) {
+            heightDistance = size.height.min - height;
+        } else if (height > size.height?.max) {
+            heightDistance = height - size.height.max;
+        }
+        
+        // Khoảng cách cân nặng
+        if (weight < size.weight?.min) {
+            weightDistance = size.weight.min - weight;
+        } else if (weight > size.weight?.max) {
+            weightDistance = weight - size.weight.max;
+        }
+        
+        // Tổng khoảng cách (có trọng số)
+        const totalDistance = heightDistance * 0.5 + weightDistance * 0.5;
+        
+        if (totalDistance < minDistance) {
+            minDistance = totalDistance;
+            bestMatch = size;
+        }
+    }
+    
+    return bestMatch;
 }
 
 function adjustSize(baseSize, preferences, productType) {
     if (!baseSize) return null;
-    // Nếu là quần thì trả về size gốc
+    
+    // Nếu là quần thì không điều chỉnh (vì dùng số, không phải chữ)
     if (productType === 'dress_pants') return baseSize;
     
-    // Nếu không có tùy chỉnh đặc biệt hoặc tất cả đều ở mức bình thường
-    if (!preferences) return baseSize;
+    // Kiểm tra xem có thay đổi về độ ôm hoặc dáng bụng không
+    const hasFitPreferenceChange = preferences.fitPreference !== 'regular';
+    const hasBellyTypeChange = preferences.bellyType !== 'normal';
+    
+    // Nếu không có thay đổi gì về độ ôm/dáng bụng, trả về size gốc
+    if (!hasFitPreferenceChange && !hasBellyTypeChange) {
+        console.log('No fit/belly adjustments needed, returning base size:', baseSize.size);
+        return baseSize;
+    }
 
     const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL'];
     let currentIndex = sizeOrder.indexOf(baseSize.size);
     
-    if (currentIndex === -1) return baseSize; // Nếu không tìm thấy size trong danh sách
+    if (currentIndex === -1) {
+        console.warn('Size not found in order:', baseSize.size);
+        return baseSize; // Nếu không tìm thấy size trong danh sách
+    }
 
+    let adjustment = 0;
+    
     // Điều chỉnh theo độ ôm
     if (preferences.fitPreference === 'loose') {
-        currentIndex += 1; // Rộng +1 size
+        adjustment += 1; // Rộng +1 size
     } else if (preferences.fitPreference === 'tight') {
-        currentIndex -= 1; // Sát -1 size
+        adjustment -= 1; // Sát -1 size
     }
-    // Vừa (regular) giữ nguyên
 
     // Điều chỉnh theo dáng bụng
     if (preferences.bellyType === 'round') {
-        currentIndex += 1; // Bụng tròn +1 size
+        adjustment += 1; // Bụng tròn +1 size
+    } else if (preferences.bellyType === 'flat') {
+        adjustment -= 1; // Bụng phẳng -1 size
     }
-    // Bụng phẳng hoặc bình thường giữ nguyên
 
-    // Đảm bảo index không vượt quá giới hạn của mảng
-    currentIndex = Math.max(0, Math.min(currentIndex, sizeOrder.length - 1));
+    // Áp dụng điều chỉnh
+    const newIndex = Math.max(0, Math.min(currentIndex + adjustment, sizeOrder.length - 1));
+    
+    console.log(`Size adjustment: ${baseSize.size} -> ${sizeOrder[newIndex]} (adjustment: ${adjustment})`);
 
     // Trả về size mới với các thuộc tính của baseSize
     return {
         ...baseSize,
-        size: sizeOrder[currentIndex]
+        size: sizeOrder[newIndex]
     };
+}
+
+// Tìm size dựa trên số đo chi tiết (chest, shoulder, waist, hip, etc.)
+function findSizeByDetailedMeasurements(sizes, measurements) {
+    let bestMatch = null;
+    let bestScore = -1;
+    
+    console.log('Finding size by detailed measurements:', measurements);
+    
+    for (const size of sizes) {
+        let score = 0;
+        let matchCount = 0;
+        
+        // Kiểm tra từng số đo chi tiết
+        Object.keys(measurements).forEach(measurement => {
+            if (measurement === 'height' || measurement === 'weight') return; // Bỏ qua height/weight
+            
+            const userValue = measurements[measurement];
+            const sizeValue = size.measurements?.[measurement];
+            
+            if (sizeValue && userValue && !isNaN(userValue)) {
+                if (typeof sizeValue === 'string' && sizeValue.includes('-')) {
+                    // Trường hợp có range như "88-92"
+                    const [min, max] = sizeValue.split('-').map(Number);
+                    if (userValue >= min && userValue <= max) {
+                        score += 3; // Điểm cao cho khớp chính xác
+                        matchCount++;
+                        console.log(`${measurement}: ${userValue} fits in range ${min}-${max} for size ${size.size} (+3 points)`);
+                    } else {
+                        // Tính điểm dựa trên khoảng cách gần nhất đến range
+                        const distance = Math.min(Math.abs(userValue - min), Math.abs(userValue - max));
+                        if (distance <= 5) { // Cho phép sai lệch 5cm
+                            const points = Math.max(0, 2 - distance / 2.5);
+                            score += points;
+                            matchCount++;
+                            console.log(`${measurement}: ${userValue} is ${distance}cm from range ${min}-${max} for size ${size.size} (+${points.toFixed(1)} points)`);
+                        }
+                    }
+                } else if (typeof sizeValue === 'number') {
+                    // Trường hợp giá trị cố định
+                    const distance = Math.abs(userValue - sizeValue);
+                    if (distance <= 5) {
+                        const points = Math.max(0, 3 - distance / 2);
+                        score += points;
+                        matchCount++;
+                        console.log(`${measurement}: ${userValue} vs ${sizeValue} for size ${size.size}, distance: ${distance} (+${points.toFixed(1)} points)`);
+                    }
+                }
+            }
+        });
+        
+        // Tính điểm trung bình và bonus cho nhiều measurement khớp
+        const avgScore = matchCount > 0 ? score / matchCount : 0;
+        const finalScore = avgScore * (1 + matchCount * 0.1); // Bonus cho nhiều measurement
+        
+        console.log(`Size ${size.size}: avgScore=${avgScore.toFixed(2)}, matchCount=${matchCount}, finalScore=${finalScore.toFixed(2)}`);
+        
+        if (finalScore > bestScore) {
+            bestScore = finalScore;
+            bestMatch = size;
+        }
+    }
+    
+    console.log(`Best match: Size ${bestMatch?.size} with score ${bestScore.toFixed(2)}`);
+    
+    // Chỉ trả về kết quả nếu có điểm số đủ tốt (ít nhất 1 measurement khớp)
+    return bestScore > 0.8 ? bestMatch : null;
 }
 
 // Validation and Measurement Collection
 function validateMeasurements(measurements) {
     const { height, weight } = measurements;
-    return !(isNaN(height) || height < 140 || height > 200 || 
-            isNaN(weight) || weight < 30 || weight > 150);
+    
+    // Kiểm tra height (cho phép khoảng rộng hơn)
+    if (isNaN(height) || height < 120 || height > 220) {
+        console.warn('Height out of range:', height);
+        return false;
+    }
+    
+    // Kiểm tra weight (cho phép khoảng rộng hơn)
+    if (isNaN(weight) || weight < 20 || weight > 200) {
+        console.warn('Weight out of range:', weight);
+        return false;
+    }
+    
+    return true;
 }
 
 function collectMeasurements(requiredMeasurements) {
@@ -723,10 +928,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event listeners cho các controls tùy chỉnh
     document.getElementById('fitPreference').addEventListener('change', () => {
+        console.log('Fit preference changed to:', document.getElementById('fitPreference').value);
         customSettings.fitPreference = document.getElementById('fitPreference').value;
     });
 
     document.getElementById('bellyType').addEventListener('change', () => {
+        console.log('Belly type changed to:', document.getElementById('bellyType').value);
         customSettings.bellyType = document.getElementById('bellyType').value;
     });
 });
@@ -737,17 +944,22 @@ function handleCustomizeClose() {
     const newBellyType = document.getElementById('bellyType').value;
     
     // Kiểm tra xem có sự thay đổi so với mặc định không
-    customSettings.modified = (newFitPreference !== 'regular' || newBellyType !== 'normal');
+    const hasChanges = (newFitPreference !== 'regular' || newBellyType !== 'normal');
     
     // Cập nhật các tùy chọn
     customSettings.fitPreference = newFitPreference;
     customSettings.bellyType = newBellyType;
+    customSettings.modified = hasChanges;
+    
+    console.log('Customize settings updated:', customSettings);
     
     // Ẩn modal
-    customizeModal.classList.add('hidden');
+    document.getElementById('customizeModal').classList.add('hidden');
     
     // Kích hoạt lại việc tính toán size để cập nhật kết quả
-    handleInputChange();
+    if (selectedProduct) {
+        handleInputChange();
+    }
 }
 
 // Hàm thu thập các số đo hiện tại
